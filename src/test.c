@@ -545,12 +545,29 @@ void test_connected_layer()
     tensor_free(updated_w);
 }
 
+void test_mattrans() {
+    /* Make tensor A */
+    size_t s[2] = {3, 2};
+    tensor a = tensor_make(2, s);
+    for (int i = 0; i < 6; i++) {
+        a.data[i] = i;
+    }
+    printf( "Original A:\n" );
+    tensor_print(a);
+
+    /* Transform tensor A */
+    tensor a_t = matrix_transpose(a);
+    printf( "Transpose A:\n" );
+    tensor_print(a_t);
+}
+
 void test_hw0()
 {
     test_copy();
     test_matmul();
-    test_activation_layer();
-    test_connected_layer();
+    test_mattrans();
+    // test_activation_layer();
+    // test_connected_layer();
 }
 
 void test()

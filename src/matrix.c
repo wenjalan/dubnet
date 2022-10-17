@@ -12,11 +12,17 @@ tensor matrix_transpose(tensor a)
 {
     assert(a.n == 2);
     // TODO 1.0: return a transposed version of a (don't modify a)
-    tensor t = tensor_make(a.n, a.size);
-    size_t len = tensor_len(a);
-    size_t i;
-    for (i = 0; i < len; i++) {
-      t.data[i] = a.data[i];
+    size_t s[2] = { a.size[1], a.size[0] };
+    tensor t = tensor_make(a.n, s);
+    // see: https://stackoverflow.com/questions/38627087/taking-the-transpose-of-a-matrix-in-c-with-1d-arrays
+    size_t n = a.size[0];
+    size_t m = a.size[1];
+    for (size_t i = 0; i < m; i++) {
+        for (size_t j = 0; j < n; j++) {
+            size_t i1 = i * n + j;
+            size_t i2 = j * m + i;
+            t.data[i1] = a.data[i2];
+        }
     }
     return t;
 }
