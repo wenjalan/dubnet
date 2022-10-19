@@ -18,7 +18,8 @@ double gflops(double ops, double time)
 double currtime()
 {
     struct timeval time;
-    if (gettimeofday(&time,NULL)){
+    if (gettimeofday(&time, NULL))
+    {
         return 0;
     }
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
@@ -26,25 +27,30 @@ double currtime()
 
 int within_eps(float a, float b)
 {
-    return fabs(a-b) < EPS;
+    return fabs(a - b) < EPS;
 }
 
 int same_tensor(tensor a, tensor b)
 {
-    if(a.n != b.n) {
+    if (a.n != b.n)
+    {
         fprintf(stderr, "Different dimensionality: %ld vs %ld\n", a.n, b.n);
         return 0;
     }
     size_t i;
-    for(i = 0; i < a.n; ++i){
-        if (a.size[i] != b.size[i]){
+    for (i = 0; i < a.n; ++i)
+    {
+        if (a.size[i] != b.size[i])
+        {
             fprintf(stderr, "Dimension %ld, different size: %ld vs %ld\n", i, a.size[i], b.size[i]);
             return 0;
         }
     }
     size_t len = tensor_len(a);
-    for(i = 0; i < len; ++i){
-        if (!within_eps(a.data[i], b.data[i])) {
+    for (i = 0; i < len; ++i)
+    {
+        if (!within_eps(a.data[i], b.data[i]))
+        {
             fprintf(stderr, "Different data at index %ld: %f vs %f\n", i, a.data[i], b.data[i]);
             return 0;
         }
@@ -60,21 +66,21 @@ void test_tensor_make_get()
     tensor srand = tensor_vrandom(1, 0);
     tensor smake = tensor_vmake(0);
 
-    TEST (srand.n == 0);
-    TEST (srand.size == 0);
-    TEST (tensor_len(srand) == 1);
+    TEST(srand.n == 0);
+    TEST(srand.size == 0);
+    TEST(tensor_len(srand) == 1);
 
-    TEST (smake.n == 0);
-    TEST (smake.size == 0);
-    TEST (tensor_len(smake) == 1);
+    TEST(smake.n == 0);
+    TEST(smake.size == 0);
+    TEST(tensor_len(smake) == 1);
 
-    TEST (a.n == 1);
-    TEST (a.size[0] = 1);
+    TEST(a.n == 1);
+    TEST(a.size[0] = 1);
 
-    TEST (b.n == 3);
-    TEST (b.size[0] == 3);
-    TEST (b.size[1] == 1080);
-    TEST (b.size[2] == 1920);
+    TEST(b.n == 3);
+    TEST(b.size[0] == 3);
+    TEST(b.size[1] == 1080);
+    TEST(b.size[2] == 1920);
 
     TEST(r.n == 3);
     TEST(r.size[0] == 3);
@@ -82,21 +88,21 @@ void test_tensor_make_get()
     TEST(r.size[2] == 1920);
 
     tensor g = tensor_get(r, 1);
-    TEST (g.n == 2);
-    TEST (g.size[0] == 1080);
-    TEST (g.size[1] == 1920);
+    TEST(g.n == 2);
+    TEST(g.size[0] == 1080);
+    TEST(g.size[1] == 1920);
 
     tensor h = tensor_get(g, 34);
-    TEST (h.n == 1);
-    TEST (h.size[0] == 1920);
+    TEST(h.n == 1);
+    TEST(h.size[0] == 1920);
 
     tensor i = tensor_get(h, 13);
-    TEST (h.n == 1);
-    TEST (h.size[0] == 1920);
+    TEST(h.n == 1);
+    TEST(h.size[0] == 1920);
 
     tensor j = tensor_get(i, 0);
 
-    TEST (same_tensor(i, j));
+    TEST(same_tensor(i, j));
 
     tensor_free(a);
     tensor_free(b);
@@ -112,18 +118,24 @@ void test_matmul()
     {
         tensor m1 = tensor_vmake(2, 2, 2);
         tensor m2 = tensor_vmake(2, 2, 2);
-        m1.data[0] = 1; m1.data[1] = 2;
-        m1.data[2] = 3; m1.data[3] = 4;
+        m1.data[0] = 1;
+        m1.data[1] = 2;
+        m1.data[2] = 3;
+        m1.data[3] = 4;
 
-        m2.data[0] = -1; m2.data[1] = -2;
-        m2.data[2] = -3; m2.data[3] = -4;
+        m2.data[0] = -1;
+        m2.data[1] = -2;
+        m2.data[2] = -3;
+        m2.data[3] = -4;
 
         tensor m3 = matrix_multiply(m1, m2);
         tensor tm3 = tensor_vmake(2, 2, 2);
-        tm3.data[0] = -7; tm3.data[1] = -10;
-        tm3.data[2] = -15; tm3.data[3] = -22;
+        tm3.data[0] = -7;
+        tm3.data[1] = -10;
+        tm3.data[2] = -15;
+        tm3.data[3] = -22;
 
-        TEST (same_tensor(m3, tm3));
+        TEST(same_tensor(m3, tm3));
 
         tensor_free(m1);
         tensor_free(m2);
@@ -135,6 +147,14 @@ void test_matmul()
         tensor b = matrix_load("data/test/b.matrix");
         tensor c = matrix_load("data/test/c.matrix");
         tensor mul = matrix_multiply(a, b);
+        // printf( "A:\n");
+        // tensor_print(a);
+        // printf( "B:\n");
+        // tensor_print(b);
+        // printf( "Expected:\n");
+        // tensor_print(c);
+        // printf( "Received:\n");
+        // tensor_print(mul);
         TEST(same_tensor(c, mul));
         tensor_free(a);
         tensor_free(b);
@@ -149,9 +169,9 @@ void test_transpose()
     tensor t = tensor_random(1.0f, 2, s);
     tensor tt = matrix_transpose(t);
     tensor ttt = matrix_transpose(tt);
-    TEST (tt.size[0] == t.size[1]);
-    TEST (tt.size[1] == t.size[0]);
-    TEST (same_tensor(t, ttt));
+    TEST(tt.size[0] == t.size[1]);
+    TEST(tt.size[1] == t.size[0]);
+    TEST(same_tensor(t, ttt));
     tensor_free(t);
     tensor_free(tt);
     tensor_free(ttt);
@@ -164,7 +184,7 @@ void test_invert()
     tensor inv = matrix_invert(t);
     tensor ident = matrix_multiply(t, inv);
     tensor isq = matrix_multiply(ident, ident);
-    TEST (same_tensor(ident, isq));
+    TEST(same_tensor(ident, isq));
     tensor_free(t);
     tensor_free(inv);
     tensor_free(ident);
@@ -185,17 +205,31 @@ See: https://www.wolframalpha.com/input/?i=systems+of+equations+calculator&assum
     size_t sb[2] = {4, 1};
     tensor M = tensor_make(2, s);
     tensor b = tensor_make(2, sb);
-    M.data[0] = 1; M.data[1] = 1; M.data[2] = -3, M.data[3] = 1;
-    M.data[4] = -5; M.data[5] = 3; M.data[6] = -4, M.data[7] = 1;
-    M.data[8] = 1; M.data[9] = 0; M.data[10] = 2, M.data[11] = -1;
-    M.data[12] = 1; M.data[13] = 2; M.data[14] = 0, M.data[15] = 0;
+    M.data[0] = 1;
+    M.data[1] = 1;
+    M.data[2] = -3, M.data[3] = 1;
+    M.data[4] = -5;
+    M.data[5] = 3;
+    M.data[6] = -4, M.data[7] = 1;
+    M.data[8] = 1;
+    M.data[9] = 0;
+    M.data[10] = 2, M.data[11] = -1;
+    M.data[12] = 1;
+    M.data[13] = 2;
+    M.data[14] = 0, M.data[15] = 0;
 
-    b.data[0] = 2; b.data[1] = 0; b.data[2] = 1; b.data[3] = 12;
+    b.data[0] = 2;
+    b.data[1] = 0;
+    b.data[2] = 1;
+    b.data[3] = 12;
     tensor a = solve_system(M, b);
     tensor t = tensor_make(2, sb);
-    t.data[0] = 22./17; t.data[1] = 91./17; t.data[2] = 84./17; t.data[3] = 173./17;
+    t.data[0] = 22. / 17;
+    t.data[1] = 91. / 17;
+    t.data[2] = 84. / 17;
+    t.data[3] = 173. / 17;
 
-    TEST (same_tensor(a, t));
+    TEST(same_tensor(a, t));
 
     tensor_free(M);
     tensor_free(b);
@@ -208,11 +242,11 @@ void test_copy()
     size_t s[2] = {3, 5};
     tensor t = tensor_random(1.0f, 2, s);
     tensor c = tensor_copy(t);
-    TEST (same_tensor(t, c));
+    TEST(same_tensor(t, c));
 
     tensor w = tensor_scale(12.3, t);
-    TEST (within_eps(w.data[0], t.data[0]*12.3));
-    TEST (within_eps(w.data[11], t.data[11]*12.3));
+    TEST(within_eps(w.data[0], t.data[0] * 12.3));
+    TEST(within_eps(w.data[11], t.data[11] * 12.3));
     tensor_free(t);
     tensor_free(c);
     tensor_free(w);
@@ -229,17 +263,17 @@ void test_broadcastable()
     tensor t7 = tensor_vmake(4, 11, 1, 13, 1);
     tensor t8 = tensor_vmake(4, 12, 1, 13, 1);
     tensor scalar = tensor_vmake(0);
-    TEST (tensor_broadcastable(t1, t2) == 1);
-    TEST (tensor_broadcastable(t2, t1) == 1);
-    TEST (tensor_broadcastable(t1, t3) == 0);
-    TEST (tensor_broadcastable(t3, t1) == 0);
-    TEST (tensor_broadcastable(t1, t4) == 1);
-    TEST (tensor_broadcastable(t4, t1) == 1);
-    TEST (tensor_broadcastable(t1, t5) == 0);
-    TEST (tensor_broadcastable(t1, t6) == 1);
-    TEST (tensor_broadcastable(t1, t7) == 1);
-    TEST (tensor_broadcastable(t1, t8) == 0);
-    TEST (tensor_broadcastable(t1, scalar) == 1);
+    TEST(tensor_broadcastable(t1, t2) == 1);
+    TEST(tensor_broadcastable(t2, t1) == 1);
+    TEST(tensor_broadcastable(t1, t3) == 0);
+    TEST(tensor_broadcastable(t3, t1) == 0);
+    TEST(tensor_broadcastable(t1, t4) == 1);
+    TEST(tensor_broadcastable(t4, t1) == 1);
+    TEST(tensor_broadcastable(t1, t5) == 0);
+    TEST(tensor_broadcastable(t1, t6) == 1);
+    TEST(tensor_broadcastable(t1, t7) == 1);
+    TEST(tensor_broadcastable(t1, t8) == 0);
+    TEST(tensor_broadcastable(t1, scalar) == 1);
     tensor_free(t1);
     tensor_free(t2);
     tensor_free(t3);
@@ -252,8 +286,8 @@ void test_broadcastable()
 
 void test_elementwise()
 {
-    size_t s1[3] = {3,2,5};
-    size_t s2[2] = {2,5};
+    size_t s1[3] = {3, 2, 5};
+    size_t s2[2] = {2, 5};
     size_t s3[1] = {5};
     tensor t1 = tensor_random(1, 3, s1);
     tensor t2 = tensor_random(1, 2, s2);
@@ -261,11 +295,11 @@ void test_elementwise()
     tensor o23 = tensor_add(t2, t3);
 
     tensor a2 = tensor_sub(o23, t3);
-    //tensor_print(t2);
-    //tensor_print(t3);
-    //tensor_print(t4);
-    //tensor_print(o23);
-    //tensor_print(o24);
+    // tensor_print(t2);
+    // tensor_print(t3);
+    // tensor_print(t4);
+    // tensor_print(o23);
+    // tensor_print(o24);
     tensor scalar = tensor_vmake(0);
     scalar.data[0] = 2;
 
@@ -280,7 +314,7 @@ void test_elementwise()
 
 void test_tensor_sum()
 {
-    size_t s1[3] = {3,2,5};
+    size_t s1[3] = {3, 2, 5};
     tensor t1 = tensor_random(1, 3, s1);
     tensor r1 = tensor_sum_dim(t1, 0);
     tensor r2 = tensor_sum_dim(t1, 1);
@@ -296,18 +330,19 @@ void test_tensor_sum()
 
 void time_matrix_multiply()
 {
-        size_t i;
-        size_t n = 100;
-        tensor a = tensor_vrandom(1, 2, 512, 768);
-        tensor b = tensor_vrandom(1, 2, 768, 384);
-        double start = currtime();
-        for(i = 0; i < n; ++i){
-            tensor c = matrix_multiply(a, b);
-            tensor_free(c);
-        }
-        double end = currtime();
-        printf("matrix_multiply took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(1.0*n*a.size[0]*b.size[0]*b.size[1], (end-start)));
+    size_t i;
+    size_t n = 100;
+    tensor a = tensor_vrandom(1, 2, 512, 768);
+    tensor b = tensor_vrandom(1, 2, 768, 384);
+    double start = currtime();
+    for (i = 0; i < n; ++i)
+    {
+        tensor c = matrix_multiply(a, b);
+        tensor_free(c);
+    }
+    double end = currtime();
+    printf("matrix_multiply took %f sec\n", end - start);
+    printf("%g gflops\n", gflops(1.0 * n * a.size[0] * b.size[0] * b.size[1], (end - start)));
 }
 
 void time_tensor()
@@ -320,40 +355,44 @@ void time_tensor()
         tensor a = tensor_random(1, d, s);
         tensor b = tensor_random(1, d, s);
         double start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_add(a, b);
             tensor_free(c);
         }
         double end = currtime();
         printf("tensor_add took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_sub(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("tensor_sub took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(1.0*n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(1.0 * n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_mul(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("tensor_mul took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(1.0*n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(1.0 * n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = matrix_multiply(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("matrix_multiply took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(1.0*n*s[0]*s[1]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(1.0 * n * s[0] * s[1] * s[1], (end - start)));
     }
     {
         size_t s[4] = {512, 128, 2, 2};
@@ -364,31 +403,34 @@ void time_tensor()
         tensor a = tensor_random(1, 4, s);
         tensor b = tensor_random(1, 4, s2);
         double start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_add(a, b);
             tensor_free(c);
         }
         double end = currtime();
         printf("tensor_add took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_div(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("tensor_div took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_mul(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("tensor_mul took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
     }
     {
         size_t s[4] = {512, 128, 2, 2};
@@ -399,31 +441,34 @@ void time_tensor()
         tensor a = tensor_random(1, 4, s);
         tensor b = tensor_random(1, 1, s2);
         double start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_add(a, b);
             tensor_free(c);
         }
         double end = currtime();
         printf("tensor_add took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_sub(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("tensor_sub took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
 
         start = currtime();
-        for(i = 0; i < n; ++i){
+        for (i = 0; i < n; ++i)
+        {
             tensor c = tensor_mul(a, b);
             tensor_free(c);
         }
         end = currtime();
         printf("tensor_mul took %f sec\n", end - start);
-        printf("%g gflops\n", gflops(n*s[0]*s[1], (end-start)));
+        printf("%g gflops\n", gflops(n * s[0] * s[1], (end - start)));
     }
 }
 
@@ -545,27 +590,63 @@ void test_connected_layer()
     tensor_free(updated_w);
 }
 
-void test_mattrans() {
+void test_mattrans()
+{
     /* Make tensor A */
     size_t s[2] = {3, 2};
     tensor a = tensor_make(2, s);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         a.data[i] = i;
     }
-    printf( "Original A:\n" );
+    printf("Original A:\n");
     tensor_print(a);
 
     /* Transform tensor A */
     tensor a_t = matrix_transpose(a);
-    printf( "Transpose A:\n" );
+    printf("Transpose A:\n");
     tensor_print(a_t);
+}
+
+void test_matmul_small()
+{
+    /* Make tensor A */
+    size_t a_n = 2;
+    size_t a_m = 4;
+    size_t s[2] = {a_n, a_m};
+    tensor a = tensor_make(2, s);
+    for (int i = 0; i < a_n * a_m; i++)
+    {
+        a.data[i] = i;
+    }
+
+    /* Make tensor B */
+    size_t b_n = 4;
+    size_t b_m = 1;
+    size_t s2[2] = {b_n, b_m};
+    tensor b = tensor_make(2, s2);
+    for (int i = 0; i < b_n * b_m; i++)
+    {
+        b.data[i] = i;
+    }
+    
+    printf( "Tensor A:\n" );
+    tensor_print(a);
+    printf( "Tensor B:\n" );
+    tensor_print(b);
+
+    tensor c = matrix_multiply(a, b);
+
+    printf( "Tensor A*B:\n" );
+    tensor_print(c);
 }
 
 void test_hw0()
 {
     test_copy();
+    // test_matmul_small();
     test_matmul();
-    test_mattrans();
+    // test_mattrans();
     // test_activation_layer();
     // test_connected_layer();
 }
@@ -580,7 +661,7 @@ void test()
     test_elementwise();
     test_tensor_sum();
     time_tensor();
-    //printf("%d tests, %d passed, %d failed\n", tests_total, tests_total-tests_fail, tests_fail);
+    // printf("%d tests, %d passed, %d failed\n", tests_total, tests_total-tests_fail, tests_fail);
 }
 
 /*

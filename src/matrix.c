@@ -35,8 +35,28 @@ tensor matrix_multiply(const tensor a, const tensor b)
     assert(a.n == 2);
     assert(b.n == 2);
     assert(a.size[1] == b.size[0]);
-    // TODO 1.1: matrix multiplication! just use 3 for loops 
-    tensor t = tensor_make(0, 0);
+    // TODO 1.1: matrix multiplication! just use 3 for loops
+    // size = height matrix a * width matrix b
+    size_t s[2] = { a.size[0], b.size[1] }; 
+    tensor t = tensor_make(2, s);
+
+    // see: https://stackoverflow.com/questions/47023651/multiplying-matrices-in-one-dimensional-arrays
+
+    size_t a_n = a.size[0];
+    size_t b_n = b.size[0];
+    size_t a_m = a.size[1];
+    size_t b_m = b.size[1];
+    
+    for (size_t i = 0; i < a_n; ++i) {
+        for (size_t j = 0; j < b_m; ++j) {
+            float sum = 0.0f;
+            for (size_t k = 0; k < b_n; ++k) {
+                sum = sum + a.data[i * b_n + k] * b.data[k * b_m + j];
+            }
+            t.data[i * b_m + j] = sum;
+        }
+    }
+
     return t;
 }
 
