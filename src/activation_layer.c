@@ -3,6 +3,29 @@
 #include <assert.h>
 #include "dubnet.h"
 
+// x = x
+float linear_activation(float x)
+{
+    return x;
+}
+
+// logistic(x) = 1/(1+e^(-x))
+float logistic_activation(float x)
+{
+    return 1 / (1 + pow(M_E, (-x)));
+}
+
+// relu(x)     = x if x > 0 else 0
+float relu_activation(float x)
+{
+    return x > 0 ? x : 0;
+}
+
+// lrelu(x)    = x if x > 0 else .01 * x
+float leaky_relu_activation(float x)
+{
+    return x > 0 ? x : 0.01 * x;
+}
 
 // Run an activation layer on input
 // layer l: pointer to layer to run
@@ -23,19 +46,57 @@ tensor forward_activation_layer(layer *l, tensor x)
     // logistic(x) = 1/(1+e^(-x))
     // relu(x)     = x if x > 0 else 0
     // lrelu(x)    = x if x > 0 else .01 * x
-    // softmax(x)  = e^{x_i} / sum(e^{x_j}) for all x_j in the same row 
+    // softmax(x)  = e^{x_i} / sum(e^{x_j}) for all x_j in the same row
 
     assert(x.n >= 2);
 
-    /* You might want this
+    float (*activation)(float);
+    switch (a)
+    {
+    case LINEAR:
+        activation = linear_activation;
+        break;
+    case LOGISTIC:
+        activation = logistic_activation;
+        break;
+    case RELU:
+        activation = relu_activation;
+        break;
+    case LRELU:
+        activation = leaky_relu_activation;
+        break;
+    }
+
+    /* You might want this */
     size_t i, j;
-    for(i = 0; i < x.size[0]; ++i){
+    for (i = 0; i < x.size[0]; ++i)
+    {
         tensor x_i = tensor_get_(x, i);
         tensor y_i = tensor_get_(y, i);
         size_t len = tensor_len(x_i);
+
+        float softmax_sum = 0.0f;
+        if (a == SOFTMAX) {
+            for (j = 0; j < len; ++j) {
+                softmax_sum += pow(M_E, x_i.data[j]);
+            }
+        }
+
         // Do stuff in here
+        for (j = 0; j < len; ++j)
+        {
+            // TODO: Implement activation functions
+            if (a == SOFTMAX)
+            {
+                // softmax(x)  = e^{x_i} / sum(e^{x_j}) for all x_j in the same row
+                y_i.data[j] = pow(M_E, x_i.data[j]) / softmax_sum;
+            }
+            else
+            {
+                y_i.data[j] = activation(x_i.data[j]);
+            }
+        }
     }
-    */
 
     return y;
 }
@@ -78,7 +139,7 @@ tensor backward_activation_layer(layer *l, tensor dy)
 // float rate: SGD learning rate
 // float momentum: SGD momentum term
 // float decay: l2 normalization term
-void update_activation_layer(layer *l, float rate, float momentum, float decay){}
+void update_activation_layer(layer *l, float rate, float momentum, float decay) {}
 
 layer make_activation_layer(ACTIVATION a)
 {

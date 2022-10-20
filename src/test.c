@@ -629,25 +629,38 @@ void test_matmul_small()
     {
         b.data[i] = i;
     }
-    
-    printf( "Tensor A:\n" );
+
+    printf("Tensor A:\n");
     tensor_print(a);
-    printf( "Tensor B:\n" );
+    printf("Tensor B:\n");
     tensor_print(b);
 
     tensor c = matrix_multiply(a, b);
 
-    printf( "Tensor A*B:\n" );
+    printf("Tensor A*B:\n");
     tensor_print(c);
+}
+
+void test_forward_activation_layer()
+{
+    tensor a = matrix_load("data/test/a.matrix");
+
+    layer log_layer = make_activation_layer(LOGISTIC);
+    layer relu_layer = make_activation_layer(RELU);
+    layer lrelu_layer = make_activation_layer(LRELU);
+    layer soft_layer = make_activation_layer(SOFTMAX);
+
+    tensor b = log_layer.forward(&log_layer, a);
 }
 
 void test_hw0()
 {
-    test_copy();
+    // test_copy();
     // test_matmul_small();
-    test_matmul();
+    // test_matmul();
     // test_mattrans();
-    // test_activation_layer();
+    // test_forward_activation_layer();
+    test_activation_layer();
     // test_connected_layer();
 }
 
