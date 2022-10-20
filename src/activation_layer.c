@@ -4,27 +4,51 @@
 #include "dubnet.h"
 
 // x = x
-float linear_activation(float x)
+float forward_linear_activation(float x)
 {
     return x;
 }
 
 // logistic(x) = 1/(1+e^(-x))
-float logistic_activation(float x)
+float forward_logistic_activation(float x)
 {
-    return 1 / (1 + pow(M_E, (-x)));
+    return 1.0f / (1.0f + pow(M_E, (-x)));
 }
 
 // relu(x)     = x if x > 0 else 0
-float relu_activation(float x)
+float forward_relu_activation(float x)
 {
-    return x > 0 ? x : 0;
+    return x > 0.0f ? x : 0.0f;
 }
 
 // lrelu(x)    = x if x > 0 else .01 * x
-float leaky_relu_activation(float x)
+float forward_leaky_relu_activation(float x)
 {
-    return x > 0 ? x : 0.01 * x;
+    return x > 0.0f ? x : 0.01f * x;
+}
+
+// d/dx logistic(x) = logistic(x) * (1 - logistic(x))
+float backward_logistic_activation(float x)
+{
+    return forward_logistic_activation(x) * (1.0f - forward_logistic_activation(x));
+}
+
+// d/dx relu(x)     = 1 if x > 0 else 0
+float backward_relu_activation(float x)
+{
+    return x > 0.0f ? 1.0f: 0.0f;
+}
+
+// d/dx lrelu(x)    = 1 if x > 0 else 0.01
+float backward_leaky_relu_activation(float x)
+{
+    return x > 0.0f ? 1.0f : 0.01f;
+}
+
+// d/dx softmax(x)  = 1
+float backward_softmax_activation(float x)
+{
+    return 1.0f;
 }
 
 // Run an activation layer on input
@@ -54,16 +78,16 @@ tensor forward_activation_layer(layer *l, tensor x)
     switch (a)
     {
     case LINEAR:
-        activation = linear_activation;
+        activation = forward_linear_activation;
         break;
     case LOGISTIC:
-        activation = logistic_activation;
+        activation = forward_logistic_activation;
         break;
     case RELU:
-        activation = relu_activation;
+        activation = forward_relu_activation;
         break;
     case LRELU:
-        activation = leaky_relu_activation;
+        activation = forward_leaky_relu_activation;
         break;
     }
 
@@ -76,8 +100,10 @@ tensor forward_activation_layer(layer *l, tensor x)
         size_t len = tensor_len(x_i);
 
         float softmax_sum = 0.0f;
-        if (a == SOFTMAX) {
-            for (j = 0; j < len; ++j) {
+        if (a == SOFTMAX)
+        {
+            for (j = 0; j < len; ++j)
+            {
                 softmax_sum += pow(M_E, x_i.data[j]);
             }
         }
@@ -121,15 +147,37 @@ tensor backward_activation_layer(layer *l, tensor dy)
     // d/dx lrelu(x)    = 1 if x > 0 else 0.01
     // d/dx softmax(x)  = 1
 
-    /* Might want this too
+    float (*activation)(float);
+    switch (a)
+    {
+    case LOGISTIC:
+        activation = backward_logistic_activation;
+        break;
+    case RELU:
+        activation = backward_relu_activation;
+        break;
+    case LRELU:
+        activation = backward_leaky_relu_activation;
+        break;
+    case SOFTMAX:
+        activation = backward_softmax_activation;
+        break;
+    }
+
+    /* Might want this too */
     size_t i, j;
-    for(i = 0; i < dx.size[0]; ++i){
+    for (i = 0; i < dx.size[0]; ++i)
+    {
         tensor x_i = tensor_get_(x, i);
         tensor dx_i = tensor_get_(dx, i);
+        tensor dy_i = tensor_get_(dy, i);
         size_t len = tensor_len(dx_i);
         // Do stuff in here
+        for (j = 0; j < len; ++j)
+        {
+            dx_i.data[j] = activation(x_i.data[j]) * dy_i.data[j];
+        }
     }
-    */
 
     return dx;
 }
