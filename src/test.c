@@ -655,13 +655,16 @@ void test_forward_activation_layer()
 
 void test_hw0()
 {
-    // test_copy();
+    // custom tests
     // test_matmul_small();
-    // test_matmul();
     // test_mattrans();
     // test_forward_activation_layer();
-    test_activation_layer();
-    // test_connected_layer();
+
+    // provided tests
+    // test_copy();
+    // test_matmul();
+    // test_activation_layer();
+    test_connected_layer();
 }
 
 void test()

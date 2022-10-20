@@ -21,8 +21,7 @@ tensor forward_connected_layer(layer *l, tensor x)
     l->x = x;
 
     // TODO: 3.0 - run the network forward
-    tensor y = tensor_make(0, 0);
-
+    tensor y = tensor_add(matrix_multiply(x, l->w), l->b);
     return y;
 }
 
