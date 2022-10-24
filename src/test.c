@@ -661,9 +661,9 @@ void test_hw0()
     // test_forward_activation_layer();
 
     // provided tests
-    // test_copy();
-    // test_matmul();
-    // test_activation_layer();
+    test_copy();
+    test_matmul();
+    test_activation_layer();
     test_connected_layer();
 }
 

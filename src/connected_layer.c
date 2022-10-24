@@ -34,17 +34,39 @@ tensor backward_connected_layer(layer *l, tensor dy)
     tensor x = l->x;
 
     // TODO: 3.1
-    // Calculate the gradient dL/db for the bias terms using backward_bias
+    // Calculate the gradient dL/db for the bias terms using tensor_sum_dim
     // add this into any stored gradient info already in l.db
+    /*
+        dL_db = sum(dy)
+    */
+    tensor dL_db = tensor_sum_dim(dy, 0);
+    tensor_axpy_(1.0f, dL_db, l->db);
 
+    tensor_free(dL_db);
 
     // Then calculate dL/dw. Use axpy to add this dL/dw into any previously stored
     // updates for our weights, which are stored in l.dw
+    /*
+        dL_dw = dL_dwx * dwx_dw
+            dwx_dw = transpose(x)
+            dL_dwx = dy
+    */
+    tensor x_t = matrix_transpose(x);
+    tensor dL_dw = matrix_multiply(x_t, dy);
+    tensor_axpy_(1.0f, dL_dw, l->dw);
 
+    tensor_free(x_t);
+    tensor_free(dL_dw);
+
+    tensor_free(x);
 
     // Calculate dL/dx and return it
-    tensor dx = tensor_copy(dy);
-
+    /*
+        dL_dx = dwx_dx * dL_dwx
+            dwx_dx = transpose(w)
+            dL_dwx = dy
+    */ 
+    tensor dx = matrix_multiply(dy, matrix_transpose(l->w));
     return dx;
 }
 
@@ -63,8 +85,31 @@ void update_connected_layer(layer *l, float rate, float momentum, float decay)
     // lastly, l.dw is the negative update (-update) but for the next iteration
     // we want it to be (-momentum * update) so we just need to scale it a little
 
+    /*
+        dw = dw + (decay * w)
+    */
+    l->dw = tensor_add(l->dw, tensor_scale(decay, l->w));
+    
+    /*
+        w = w - rate * dw
+    */
+    l->w = tensor_sub(l->w, tensor_scale(rate, l->dw));
+    
+    /*
+        l.dw = momentum * update
+    */
+    l->dw = tensor_scale(momentum, l->dw);
 
     // Do the same for biases as well but no need to use weight decay on biases
+    /*
+        b = b - (rate * db)
+    */
+    l->b = tensor_sub(l->b, tensor_scale(rate, l->db));
+    
+    /*
+        db = momentum * update 
+    */
+    l->db = tensor_scale(momentum, l->db);
 }
 
 layer make_connected_layer(int inputs, int outputs)

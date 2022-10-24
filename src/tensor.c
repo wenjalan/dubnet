@@ -101,7 +101,7 @@ tensor tensor_scale(float s, tensor t)
 // tensor y: tensor to be added into
 void tensor_axpy_(float a, tensor x, tensor y)
 {
-    printf( "*** tensor_axpy_" );
+    // printf( "*** tensor_axpy_" );
     assert(tensor_len(x) == tensor_len(y));
     // TODO 0.2: perform the elementwise, in-place computation
     size_t len = tensor_len(y);
