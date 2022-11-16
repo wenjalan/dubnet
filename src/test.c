@@ -659,6 +659,140 @@ void test_forward_activation_layer()
     tensor b = log_layer.forward(&log_layer, a);
 }
 
+void test_im2col()
+{
+    image im = load_image("data/test/dog.jpg"); 
+    tensor t = image_to_tensor(im);
+    tensor col = im2col(t, 3, 3, 2, 1);
+    tensor truth_col = matrix_load("data/test/im2col.matrix");
+    tensor col2 = im2col(t, 2, 2, 2, 0);
+    tensor truth_col2 = matrix_load("data/test/im2col2.matrix");
+    TEST(same_tensor(truth_col,   col));
+    TEST(same_tensor(truth_col2,  col2));
+    tensor_free(col);
+    tensor_free(col2);
+    tensor_free(truth_col);
+    tensor_free(truth_col2);
+    tensor_free(t);
+    free_image(im);
+}
+
+void test_col2im()
+{
+    image im = load_image("data/test/dog.jpg"); 
+    tensor dcol = matrix_load("data/test/dcol.matrix");
+    tensor dcol2 = matrix_load("data/test/dcol2.matrix");
+    tensor col2im_res = col2im(dcol, im.c, im.h, im.w, 3, 3, 2, 1);
+    tensor col2im_res2 = col2im(dcol2, im.c, im.h, im.w, 2, 2, 2, 0);
+
+    tensor truth_col2im = tensor_load("data/test/truth_col2im.tensor");
+    tensor truth_col2im2 = tensor_load("data/test/truth_col2im2.tensor");
+
+    TEST(same_tensor(truth_col2im, col2im_res));
+    TEST(same_tensor(truth_col2im2, col2im_res2));
+    free_image(im);
+}
+
+
+void test_convolutional_layer()
+{
+    layer l = make_convolutional_layer(16, 8, 3, 1, 1);
+    tensor xt = tensor_load("data/test/conv_x.tensor");
+    tensor wt = tensor_load("data/test/conv_w.tensor");
+    tensor bt = tensor_load("data/test/conv_b.tensor");
+    tensor truth_yt = tensor_load("data/test/conv_y.tensor");
+
+    tensor_free(l.w);
+    tensor_free(l.b);
+    l.w = wt;
+    l.b = bt;
+
+    tensor y = l.forward(&l, xt);
+ 
+    TEST(same_tensor(truth_yt, y));
+
+    tensor dyt = tensor_load("data/test/conv_dy.tensor");
+    tensor dwt = tensor_load("data/test/conv_dw.tensor");
+    tensor dbt = tensor_load("data/test/conv_db.tensor");
+    tensor truth_dxt = tensor_load("data/test/conv_dx.tensor");
+    
+    tensor dx = l.backward(&l, dyt);
+
+    TEST(same_tensor(truth_dxt, dx));
+    TEST(same_tensor(dwt, l.dw));
+    TEST(same_tensor(dbt, l.db));
+
+    l.update(&l, 1, .9, .5);
+
+    tensor updated_wt =  tensor_load("data/test/updated_conv_w.tensor");
+    tensor updated_dwt = tensor_load("data/test/updated_conv_dw.tensor");
+    tensor updated_bt =  tensor_load("data/test/updated_conv_b.tensor");
+    tensor updated_dbt = tensor_load("data/test/updated_conv_db.tensor");
+
+    TEST(same_tensor(updated_dwt, l.dw));
+    TEST(same_tensor(updated_wt, l.w));
+    TEST(same_tensor(updated_dbt, l.db));
+    TEST(same_tensor(updated_bt, l.b));
+
+    tensor_free(updated_wt);
+    tensor_free(updated_dwt);
+    tensor_free(updated_bt);
+    tensor_free(updated_dbt);
+
+    tensor_free(dyt);
+    tensor_free(dbt);
+    tensor_free(dwt);
+
+    free_layer(l);
+    tensor_free(truth_yt);
+    tensor_free(xt);
+    tensor_free(dx);
+    tensor_free(y);
+}
+
+void test_maxpool_layer()
+{
+    tensor xt = tensor_load("data/test/max_x.tensor");
+
+    layer max_l = make_maxpool_layer(2, 2);
+    layer max_l3 = make_maxpool_layer(3, 2);
+
+    tensor max_y = max_l.forward(&max_l, xt);
+    tensor max_y3 = max_l3.forward(&max_l3, xt);
+
+    tensor truth_max_yt =  tensor_load("data/test/max_y.tensor");
+    tensor truth_max_y3t = tensor_load("data/test/max_y3.tensor");
+
+    TEST(same_tensor(truth_max_yt, max_y));
+    TEST(same_tensor(truth_max_y3t, max_y3));
+
+    tensor max_dyt =  tensor_load("data/test/max_dy.tensor");
+    tensor max_dy3t = tensor_load("data/test/max_dy3.tensor");
+
+    tensor max_dx = max_l.backward(&max_l, max_dyt);
+    tensor max_dx3 = max_l3.backward(&max_l3, max_dy3t);
+
+    tensor truth_max_dxt =  tensor_load("data/test/max_dx.tensor");
+    tensor truth_max_dx3t = tensor_load("data/test/max_dx3.tensor");
+    
+
+    TEST(same_tensor(truth_max_dxt, max_dx));
+    TEST(same_tensor(truth_max_dx3t, max_dx3));
+
+
+    tensor_free(xt);
+    tensor_free(max_y);
+    tensor_free(max_y3);
+    tensor_free(truth_max_yt);
+    tensor_free(truth_max_y3t);
+    tensor_free(max_dx);
+    tensor_free(max_dx3);
+    tensor_free(truth_max_dxt);
+    tensor_free(truth_max_dx3t);
+    free_layer(max_l);
+    free_layer(max_l3);
+}
+
 void test_hw0()
 {
     // custom tests
