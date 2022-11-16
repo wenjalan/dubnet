@@ -10,15 +10,13 @@
 // returns: the result of running the layer y = xw+b
 tensor forward_connected_layer(layer *l, tensor x)
 {
-    if(x.n > 2){
-        x = tensor_vview(x, 2, x.size[0], tensor_len(x)/x.size[0]);
-    } else {
-        x = tensor_copy(x);
-    }
     // Saving our input
     // Probably don't change this
     tensor_free(l->x);
-    l->x = x;
+    l->x = tensor_copy(x);
+
+    // turn x into matrix if it isn't (this is kind gross but has to be done)
+    x = tensor_vview(x, 2, x.size[0], tensor_len(x)/x.size[0]);
 
     // TODO: 3.0 - run the network forward
     tensor y = tensor_add(matrix_multiply(x, l->w), l->b);
@@ -31,7 +29,7 @@ tensor forward_connected_layer(layer *l, tensor x)
 // returns: dL/dx for this layer
 tensor backward_connected_layer(layer *l, tensor dy)
 {
-    tensor x = l->x;
+    tensor x = tensor_vview(l->x, 2, l->x.size[0], tensor_len(l->x)/l->x.size[0]);
 
     // TODO: 3.1
     // Calculate the gradient dL/db for the bias terms using tensor_sum_dim
