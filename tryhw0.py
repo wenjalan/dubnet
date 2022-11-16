@@ -10,9 +10,13 @@ def softmax_model():
     return make_net(l)
 
 def neural_net():
-    l = [   make_connected_layer(inputs, 32),
+    l = [   make_connected_layer(inputs, 784 / 2),
             make_activation_layer(RELU),
-            make_connected_layer(32, 10),
+
+            make_connected_layer(784 / 2, 784 / 4),
+            make_activation_layer(RELU),
+
+            make_connected_layer(784 / 4, 10),
             make_activation_layer(SOFTMAX)]
     return make_net(l)
 

@@ -58,8 +58,6 @@ tensor backward_connected_layer(layer *l, tensor dy)
     tensor_free(x_t);
     tensor_free(dL_dw);
 
-    tensor_free(x);
-
     // Calculate dL/dx and return it
     /*
         dL_dx = dwx_dx * dL_dwx
