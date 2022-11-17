@@ -827,9 +827,9 @@ void test_hw1()
 {
     // test_im2col_small();
     test_im2col();
-    // test_col2im();
-    // test_convolutional_layer();
-    // test_maxpool_layer();
+    test_col2im();
+    test_convolutional_layer();
+    test_maxpool_layer();
 }
 
 void test()

@@ -61,10 +61,9 @@ tensor im2col(tensor im, size_t size_y, size_t size_x, size_t stride, size_t pad
                 for (c_j = 0; c_j < size_y; ++c_j) {
                     // for each col in the kernel
                     for (c_k = 0; c_k < size_x; ++c_k) {
-                        col_i = i * size_y * size_x + c_j * size_x + c_k;
-                        col_j = (j + pad) / stride * res_w + (k + pad) / stride;
-                        float f = im_get(im, i, j + c_j, k + c_k);
-                        col_set(col, col_i, col_j, f);
+                        col_i = (i * size_y * size_x) + (c_j * size_x) + c_k;
+                        col_j = ((j + pad) / stride) * res_w + ((k + pad) / stride);
+                        col_set(col, col_i, col_j, im_get(im, i, j + c_j, k + c_k));
                     }
                 }
             }
@@ -98,7 +97,27 @@ tensor col2im(tensor col, size_t c, size_t h, size_t w, size_t size_y, size_t si
 
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-
+    // for each channel
+    // image loops
+    size_t c_j, c_k;
+    size_t col_i, col_j;
+    for (i = 0; i < im_c; ++i) {
+        // for each row
+        for (j = (0 - pad); j < (im_h + pad); j += stride) {
+            // for each col
+            for (k = (0 - pad); k < (im_w + pad); k += stride) {
+                // for each row in the kernel
+                for (c_j = 0; c_j < size_y; ++c_j) {
+                    // for each col in the kernel
+                    for (c_k = 0; c_k < size_x; ++c_k) {
+                        col_i = (i * size_y * size_x) + (c_j * size_x) + c_k;
+                        col_j = ((j + pad) / stride) * res_w + ((k + pad) / stride);
+                        im.data[i * im_h * im_w + (j + c_j) * im_w + (k + c_k)] += col.data[col_i * cols + col_j];
+                    }
+                }
+            }
+        }
+    }
     return im;
 }
 
@@ -223,7 +242,29 @@ tensor backward_convolutional_layer(layer *l, tensor dy)
 void update_convolutional_layer(layer *l, float rate, float momentum, float decay)
 {
     // TODO: 5.3
+    // Copy-pasted from update_connected_layer in connected_layer.c
+    l->dw = tensor_add(l->dw, tensor_scale(decay, l->w));
+    
+    /*
+        w = w - rate * dw
+    */
+    l->w = tensor_sub(l->w, tensor_scale(rate, l->dw));
+    
+    /*
+        l.dw = momentum * update
+    */
+    l->dw = tensor_scale(momentum, l->dw);
 
+    // Do the same for biases as well but no need to use weight decay on biases
+    /*
+        b = b - (rate * db)
+    */
+    l->b = tensor_sub(l->b, tensor_scale(rate, l->db));
+    
+    /*
+        db = momentum * update 
+    */
+    l->db = tensor_scale(momentum, l->db);
 }
 
 // Make a new convolutional layer
