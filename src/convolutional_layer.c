@@ -5,13 +5,30 @@
 #include "dubnet.h"
 #include "matrix.h"
 
+float im_get(tensor im, size_t chan, size_t row, size_t col) {
+    assert(im.n == 3);
+    size_t im_c = im.size[0];
+    size_t im_h = im.size[1];
+    size_t im_w = im.size[2];
+    if ((chan < 0 || col < 0 || row < 0) || (chan >= im_c || row >= im_h || col >= im_w)) {
+        return 0.0f;
+    }
+    return im.data[chan * im_h * im_w + row * im_w + col];
+}
+
+void col_set(tensor c, size_t i, size_t j, float f) {
+    assert(c.n == 2);
+    size_t c_h = c.size[0];
+    size_t c_w = c.size[1];
+    c.data[i * c_w + j] = f;
+}
+
 // Make a column matrix out of an image
 // tensor im: image to process
 // size_t size: kernel size for convolution operation
 // size_t stride: stride for convolution
 // size_t pad: # pixels padding on each edge for convolution
 // returns: column matrix
-
 tensor im2col(tensor im, size_t size_y, size_t size_x, size_t stride, size_t pad)
 {
     assert(im.n == 3);
@@ -31,7 +48,28 @@ tensor im2col(tensor im, size_t size_y, size_t size_x, size_t stride, size_t pad
 
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-
+    // for each channel
+    // image loops
+    size_t c_j, c_k;
+    size_t col_i, col_j;
+    for (i = 0; i < im_c; ++i) {
+        // for each row
+        for (j = (0 - pad); j < (im_h + pad); j += stride) {
+            // for each col
+            for (k = (0 - pad); k < (im_w + pad); k += stride) {
+                // for each row in the kernel
+                for (c_j = 0; c_j < size_y; ++c_j) {
+                    // for each col in the kernel
+                    for (c_k = 0; c_k < size_x; ++c_k) {
+                        col_i = i * size_y * size_x + c_j * size_x + c_k;
+                        col_j = (j + pad) / stride * res_w + (k + pad) / stride;
+                        float f = im_get(im, i, j + c_j, k + c_k);
+                        col_set(col, col_i, col_j, f);
+                    }
+                }
+            }
+        }
+    }
     return col;
 }
 

@@ -659,6 +659,21 @@ void test_forward_activation_layer()
     tensor b = log_layer.forward(&log_layer, a);
 }
 
+void test_im2col_small() {
+    size_t c = 2, h = 2, w = 2;
+    size_t s[3] = {c, h, w};
+    tensor a = tensor_make(3, s);
+    for (int i = 0; i < c * h * w; i++)
+    {
+        a.data[i] = i;
+    }
+    printf("Original A:\n");
+    tensor_print(a);
+    tensor col = im2col(a, 2, 2, 1, 0);
+    printf("Col A:\n");
+    tensor_print(col);
+}
+
 void test_im2col()
 {
     image im = load_image("data/test/dog.jpg"); 
@@ -810,10 +825,11 @@ void test_hw0()
 
 void test_hw1()
 {
+    // test_im2col_small();
     test_im2col();
-    test_col2im();
-    test_convolutional_layer();
-    test_maxpool_layer();
+    // test_col2im();
+    // test_convolutional_layer();
+    // test_maxpool_layer();
 }
 
 void test()
