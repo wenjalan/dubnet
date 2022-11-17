@@ -5,24 +5,6 @@
 #include "dubnet.h"
 #include "matrix.h"
 
-float im_get(tensor im, size_t chan, size_t row, size_t col) {
-    assert(im.n == 3);
-    size_t im_c = im.size[0];
-    size_t im_h = im.size[1];
-    size_t im_w = im.size[2];
-    if ((chan < 0 || col < 0 || row < 0) || (chan >= im_c || row >= im_h || col >= im_w)) {
-        return 0.0f;
-    }
-    return im.data[chan * im_h * im_w + row * im_w + col];
-}
-
-void col_set(tensor c, size_t i, size_t j, float f) {
-    assert(c.n == 2);
-    size_t c_h = c.size[0];
-    size_t c_w = c.size[1];
-    c.data[i * c_w + j] = f;
-}
-
 // Make a column matrix out of an image
 // tensor im: image to process
 // size_t size: kernel size for convolution operation
@@ -48,24 +30,24 @@ tensor im2col(tensor im, size_t size_y, size_t size_x, size_t stride, size_t pad
 
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-    // for each channel
-    // image loops
-    size_t c_j, c_k;
-    size_t col_i, col_j;
-    for (i = 0; i < im_c; ++i) {
-        // for each row
-        for (j = (0 - pad); j < (im_h + pad); j += stride) {
-            // for each col
-            for (k = (0 - pad); k < (im_w + pad); k += stride) {
-                // for each row in the kernel
-                for (c_j = 0; c_j < size_y; ++c_j) {
-                    // for each col in the kernel
-                    for (c_k = 0; c_k < size_x; ++c_k) {
-                        col_i = (i * size_y * size_x) + (c_j * size_x) + c_k;
-                        col_j = ((j + pad) / stride) * res_w + ((k + pad) / stride);
-                        col_set(col, col_i, col_j, im_get(im, i, j + c_j, k + c_k));
-                    }
-                }
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            size_t c = i / (size_y * size_x);
+            size_t y = (i / size_x) % size_y;
+            size_t x = i % size_x;
+            size_t res_y = j / res_w;
+            size_t res_x = j % res_w;
+            size_t im_y = res_y * stride + y - pad;
+            size_t im_x = res_x * stride + x - pad;
+            if (im_y >= 0 && im_y < im_h && im_x >= 0 && im_x < im_w)
+            {
+                col.data[i * cols + j] = im.data[c * im_h * im_w + im_y * im_w + im_x];
+            }
+            else
+            {
+                col.data[i * cols + j] = 0;
             }
         }
     }
@@ -97,24 +79,20 @@ tensor col2im(tensor col, size_t c, size_t h, size_t w, size_t size_y, size_t si
 
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-    // for each channel
-    // image loops
-    size_t c_j, c_k;
-    size_t col_i, col_j;
-    for (i = 0; i < im_c; ++i) {
-        // for each row
-        for (j = (0 - pad); j < (im_h + pad); j += stride) {
-            // for each col
-            for (k = (0 - pad); k < (im_w + pad); k += stride) {
-                // for each row in the kernel
-                for (c_j = 0; c_j < size_y; ++c_j) {
-                    // for each col in the kernel
-                    for (c_k = 0; c_k < size_x; ++c_k) {
-                        col_i = (i * size_y * size_x) + (c_j * size_x) + c_k;
-                        col_j = ((j + pad) / stride) * res_w + ((k + pad) / stride);
-                        im.data[i * im_h * im_w + (j + c_j) * im_w + (k + c_k)] += col.data[col_i * cols + col_j];
-                    }
-                }
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            size_t c = i / (size_y * size_x);
+            size_t y = (i / size_x) % size_y;
+            size_t x = i % size_x;
+            size_t res_y = j / res_w;
+            size_t res_x = j % res_w;
+            size_t im_y = res_y * stride + y - pad;
+            size_t im_x = res_x * stride + x - pad;
+            if (im_y >= 0 && im_y < im_h && im_x >= 0 && im_x < im_w)
+            {
+                im.data[c * im_h * im_w + im_y * im_w + im_x] += col.data[i * cols + j];
             }
         }
     }
