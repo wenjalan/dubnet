@@ -845,8 +845,8 @@ void test_batchnorm2d_layer()
     TEST(same_tensor(truth_mu2, mu2));
     TEST(same_tensor(truth_var,   var));
     TEST(same_tensor(truth_var2, var2));
-    TEST(same_tensor(truth_y,   y));
-    TEST(same_tensor(truth_y2, y2));
+    TEST(same_tensor(truth_y,   y)); // normalize2d
+    TEST(same_tensor(truth_y2, y2)); // normalize2d
 
 
     tensor dm = delta_mean2d(dy, var);
