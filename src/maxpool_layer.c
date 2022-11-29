@@ -91,7 +91,7 @@ tensor backward_maxpool_layer(layer *l, tensor dy)
                 for (size_t w = 0; w < dy.size[3]; w++)
                 {
                     // find max value in region
-                    // this some more black magic
+                    // this some black magic
                     float max = -FLT_MAX;
                     size_t max_i = 0;
                     size_t max_j = 0;
